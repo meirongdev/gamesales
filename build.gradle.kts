@@ -24,6 +24,12 @@ dependencies {
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("jakarta.persistence:jakarta.persistence-api:3.1.0"){
+		exclude(group = "xml-apis", module = "xml-apis")
+	}
+	runtimeOnly("mysql:mysql-connector-java:8.0.33")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

@@ -1,5 +1,6 @@
 package dev.meirong.demos.gamesales.web;
 
+import dev.meirong.demos.gamesales.exception.NotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -25,5 +26,13 @@ public class GlobalExceptionHandler {
     response.put("status", "error");
     response.put("message", "File size exceeds maximum limit!");
     return new ResponseEntity<>(response, HttpStatus.PAYLOAD_TOO_LARGE);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
+    Map<String, Object> response = new HashMap<>();
+    response.put("status", HttpStatus.NOT_FOUND.value());
+    response.put("message", ex.getMessage());
+    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
   }
 }

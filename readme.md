@@ -6,21 +6,23 @@
 - Java 22
 - SpringBoot 3.3.4
 - Docker Compose v2.29.7
-
+- curl
 
 ## Start App
 
 ```bash
-./gradlew bootRun
+make startApp
 ```
-
 
 ## Endpoint test
 
-### `import`
+import csv
+```bash
+make testImport
+```
+
+## Other Command
 
 ```bash
-curl -X POST http://localhost:8080/import \
-	-F "file=@/home/mr/projects/spring/gamesales/test.csv" \
-	-H "Content-Type: multipart/form-data"
+make help
 ```
