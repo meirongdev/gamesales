@@ -1,12 +1,12 @@
 package dev.meirong.demos.gamesales.service;
 
 import dev.meirong.demos.gamesales.domain.CsvImportLog;
+import dev.meirong.demos.gamesales.domain.ImportStatus;
 import dev.meirong.demos.gamesales.exception.CsvException;
 import dev.meirong.demos.gamesales.repository.CsvImportLogRepo;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Optional;
@@ -23,10 +23,15 @@ public class CsvService {
 
   private final CsvImportLogRepo csvImportLogRepo;
 
+  private final KafkaProducer kafkaProducer;
+
   public CsvService(
-      @Value("${file.upload-dir}") String uploadDir, CsvImportLogRepo csvImportLogRepo) {
+      @Value("${file.upload-dir}") String uploadDir,
+      CsvImportLogRepo csvImportLogRepo,
+      KafkaProducer kafkaProducer) {
     this.uploadDir = uploadDir;
     this.csvImportLogRepo = csvImportLogRepo;
+    this.kafkaProducer = kafkaProducer;
   }
 
   public String importCsv(MultipartFile file) {
@@ -49,8 +54,12 @@ public class CsvService {
           outputStream.write(buffer, 0, bytesRead);
         }
       }
-      return logImportToDatabase(file.getOriginalFilename(), localFileName);
-    } catch (IOException e) {
+
+      logImportToDatabase(file.getOriginalFilename(), localFileName);
+      kafkaProducer.sendMessage(localFileName);
+
+      return localFileName;
+    } catch (Exception e) {
       log.error(uploadDir, e);
       throw new CsvException("Fail to save data");
     }
@@ -61,7 +70,7 @@ public class CsvService {
         CsvImportLog.builder()
             .importId(localFileName)
             .originalFileName(originalFileName)
-            .importStatus(0)
+            .importStatus(ImportStatus.TO_IMPORT)
             .createdAt(Instant.now())
             .build();
 

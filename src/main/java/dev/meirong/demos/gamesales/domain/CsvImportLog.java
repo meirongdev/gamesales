@@ -1,6 +1,7 @@
 package dev.meirong.demos.gamesales.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.time.Instant;
@@ -31,10 +32,10 @@ public class CsvImportLog {
   @Column(length = 100, nullable = false)
   private String originalFileName;
 
+  @Convert(converter = ImportStatusConverter.class)
   @Column(length = 1)
-  private int importStatus;
+  private ImportStatus importStatus;
 
-  private int totalCount;
   private int successCount;
   private int failureCount;
 

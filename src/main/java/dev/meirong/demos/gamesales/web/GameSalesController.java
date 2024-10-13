@@ -25,7 +25,7 @@ public class GameSalesController {
   public Map<String, Object> uploadLargeFile(@RequestParam("file") MultipartFile file) {
     var importId = csvService.importCsv(file);
     Map<String, Object> response = new HashMap<>();
-    response.put("message", "CSV" + file.getOriginalFilename() + "uploaded successfully.");
+    response.put("message", file.getOriginalFilename() + " uploaded successfully.");
     response.put("trace no", importId);
     return response;
   }
