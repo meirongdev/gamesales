@@ -1,10 +1,16 @@
 package dev.meirong.demos.gamesales.web;
 
 import dev.meirong.demos.gamesales.domain.CsvImportLog;
+import dev.meirong.demos.gamesales.domain.GameSale;
 import dev.meirong.demos.gamesales.exception.NotFoundException;
 import dev.meirong.demos.gamesales.service.CsvService;
+import dev.meirong.demos.gamesales.service.GameSaleService;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +23,11 @@ public class GameSalesController {
 
   private final CsvService csvService;
 
-  public GameSalesController(CsvService csvService) {
+  private final GameSaleService gameSaleService;
+
+  public GameSalesController(CsvService csvService, GameSaleService gameSaleService) {
     this.csvService = csvService;
+    this.gameSaleService = gameSaleService;
   }
 
   @PostMapping("/import")
@@ -36,5 +45,30 @@ public class GameSalesController {
     return csvService
         .getImportLogByTraceNo(traceNo)
         .orElseThrow(() -> new NotFoundException("Log not found for trace no: " + traceNo));
+  }
+
+  // curl -v GET
+  // http://localhost:8080/getGameSales?fromDate=2021-10-09T00:00:00Z&toDate=2024-10-10T23:59:59Z
+  // curl -v GET http://localhost:8080/getGameSales?salePrice=20&priceComparison=less
+  @GetMapping("/getGameSales")
+  public Page<GameSale> getGameSales(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "100") int size,
+      @RequestParam(required = false) Instant fromDate,
+      @RequestParam(required = false) Instant toDate,
+      @RequestParam(required = false) BigDecimal salePrice,
+      @RequestParam(required = false) String priceComparison) {
+
+    PageRequest pageable = PageRequest.of(page, size);
+
+    if (fromDate != null && toDate != null) {
+      return gameSaleService.getGameSalesByDateRange(fromDate, toDate, pageable);
+    } else if (salePrice != null && "less".equalsIgnoreCase(priceComparison)) {
+      return gameSaleService.getGameSalesBySalePriceLessThan(salePrice, pageable);
+    } else if (salePrice != null && "greater".equalsIgnoreCase(priceComparison)) {
+      return gameSaleService.getGameSalesBySalePriceGreaterThan(salePrice, pageable);
+    } else {
+      return gameSaleService.getAllGameSales(pageable);
+    }
   }
 }

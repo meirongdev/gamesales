@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
@@ -16,7 +17,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "game_sales")
+@Table(
+    name = "game_sales",
+    indexes = {
+      @Index(name = "idx_date_of_sale", columnList = "date_of_sale"),
+      @Index(name = "idx_sale_price", columnList = "sale_price")
+    })
 @Getter
 @Setter
 @NoArgsConstructor

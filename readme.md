@@ -21,6 +21,13 @@ import csv
 make testImport
 ```
 
+`/GetGameSales` endpoint
+```bash
+make testGetGameSales
+make testGetGameSalesByDuration
+make testGetGameSalesBySalePriceComparison
+```
+
 ## Other Command
 
 ```bash

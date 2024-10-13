@@ -29,6 +29,21 @@ testImport:
 		-F "file=@test.csv" \
 		-H "Content-Type: multipart/form-data"
 
+.PHONY: testGetGameSales
+# Test the /getGameSales endpoint
+testGetGameSales:
+	@time curl http://localhost:8080/getGameSales
+
+.PHONY: testGetGameSalesByDuration
+# Test the /getGameSales endpoint with duration, eg: curl -v GET http://localhost:8080/getGameSales\?fromDate\=2021-10-09T00:00:00Z\&toDate\=2024-10-10T23:59:59Z
+testGetGameSalesByDuration:
+	@time curl http://localhost:8080/getGameSales\?fromDate\=2021-10-09T00:00:00Z\&toDate\=2024-10-10T23:59:59Z
+
+.PHONY: testGetGameSalesBySalePriceComparison
+# Test the /getGameSales endpoint with sale price, eg: curl -v GET http://localhost:8080/getGameSales\?salePrice\=20\&priceComparison\=less
+testGetGameSalesBySalePriceComparison:
+	@time curl http://localhost:8080/getGameSales\?salePrice\=20\&priceComparison\=less
+
 .PHONY: help
 # Help.
 help:
