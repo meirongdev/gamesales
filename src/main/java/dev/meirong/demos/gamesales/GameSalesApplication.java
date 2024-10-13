@@ -4,13 +4,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GamesalesApplication {
+public class GameSalesApplication {
 
-  public GamesalesApplication() {
+  public GameSalesApplication() {
     super();
   }
 
   public static void main(String[] args) {
-    SpringApplication.run(GamesalesApplication.class, args);
+    SpringApplication.run(GameSalesApplication.class, args);
   }
 }
