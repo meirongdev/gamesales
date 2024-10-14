@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -38,6 +40,10 @@ public class KafkaConsumer {
   private final CsvImportLogRepo csvImportLogRepo;
   private final Validator validator;
 
+  private final ExecutorService executor;
+
+  private static final int BATCH = 300;
+
   public KafkaConsumer(
       @Value("${file.upload-dir}") String uploadDir,
       GameSaleRepo gameSaleRepo,
@@ -47,6 +53,7 @@ public class KafkaConsumer {
     this.csvImportLogRepo = csvImportLogRepo;
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     this.validator = factory.getValidator();
+    this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
   }
 
   @KafkaListener(topics = "csv-import", groupId = "gamesales-import-log-group")
@@ -98,14 +105,16 @@ public class KafkaConsumer {
         gameSales.add(gameSale.get());
         successCount++;
 
-        if (gameSales.size() >= 200) {
-          gameSaleRepo.saveAll(gameSales);
+        if (gameSales.size() >= BATCH) {
+          List<GameSale> batch = new ArrayList<>(gameSales);
+          executor.submit(() -> gameSaleRepo.saveAll(batch));
           gameSales.clear();
         }
       }
 
       if (!gameSales.isEmpty()) {
-        gameSaleRepo.saveAll(gameSales);
+        List<GameSale> batch = new ArrayList<>(gameSales);
+        executor.submit(() -> gameSaleRepo.saveAll(batch));
       }
 
       importLog.setSuccessCount(successCount);
@@ -115,6 +124,7 @@ public class KafkaConsumer {
       } else {
         importLog.setImportStatus(ImportStatus.SUCCESS);
       }
+      importLog.setUpdatedAt(Instant.now());
       csvImportLogRepo.save(importLog);
       log.info("File processed and saved to database: " + fileName);
     } catch (IOException e) {
@@ -135,12 +145,12 @@ public class KafkaConsumer {
     gameSale.setSalePrice(new BigDecimal(values[7]));
     var dateOfSale = values[8];
     gameSale.setDateOfSale(parse(dateOfSale));
-    try {
-      validateGameSale(gameSale);
-    } catch (IllegalArgumentException e) {
-      log.error("Validation failed for game sale: " + gameSale + " due to: " + e.getMessage());
-      gameSale = null;
-    }
+    // try {
+    //   validateGameSale(gameSale);
+    // } catch (IllegalArgumentException e) {
+    //   log.error("Validation failed for game sale: " + gameSale + " due to: " + e.getMessage());
+    //   gameSale = null;
+    // }
     return Optional.ofNullable(gameSale);
   }
 

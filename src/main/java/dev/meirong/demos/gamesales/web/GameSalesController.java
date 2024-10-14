@@ -59,7 +59,7 @@ public class GameSalesController {
   @GetMapping("/getGameSales")
   public Page<GameSale> getGameSales(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "100") int size,
+      @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) Instant fromDate,
       @RequestParam(required = false) Instant toDate,
       @RequestParam(required = false) BigDecimal salePrice,
