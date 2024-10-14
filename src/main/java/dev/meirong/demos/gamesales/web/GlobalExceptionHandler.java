@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Map<String, Object>> handleAllExceptions(Exception ex) {
     Map<String, Object> response = new HashMap<>();

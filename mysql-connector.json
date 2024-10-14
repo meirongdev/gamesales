@@ -1,0 +1,19 @@
+{
+	"name": "game-sales-connector",
+	"config": {
+			"connector.class": "io.debezium.connector.mysql.MySqlConnector",
+			"decimal.handling.mode": "string",
+			"tasks.max": "1",
+			"database.hostname": "mysql",
+			"database.port": "3306",
+			"database.user": "root",
+			"database.password": "test",
+			"database.server.id": "184054",
+			"topic.prefix": "dbserver1",
+			"database.include.list": "gamesales",
+			"table.include.list": "gamesales.game_sales",
+			"schema.history.internal.kafka.bootstrap.servers": "kafka:9093",
+			"schema.history.internal.kafka.topic": "schemahistory.gamesales",
+			"include.schema.changes": "true"
+	}
+}

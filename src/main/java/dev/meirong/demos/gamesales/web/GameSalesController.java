@@ -4,9 +4,11 @@ import dev.meirong.demos.gamesales.domain.CsvImportLog;
 import dev.meirong.demos.gamesales.domain.GameSale;
 import dev.meirong.demos.gamesales.exception.NotFoundException;
 import dev.meirong.demos.gamesales.service.CsvService;
+import dev.meirong.demos.gamesales.service.DailySaleService;
 import dev.meirong.demos.gamesales.service.GameSaleService;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.data.domain.Page;
@@ -25,9 +27,13 @@ public class GameSalesController {
 
   private final GameSaleService gameSaleService;
 
-  public GameSalesController(CsvService csvService, GameSaleService gameSaleService) {
+  private final DailySaleService dailySaleService;
+
+  public GameSalesController(
+      CsvService csvService, GameSaleService gameSaleService, DailySaleService dailySaleService) {
     this.csvService = csvService;
     this.gameSaleService = gameSaleService;
+    this.dailySaleService = dailySaleService;
   }
 
   @PostMapping("/import")
@@ -69,6 +75,20 @@ public class GameSalesController {
       return gameSaleService.getGameSalesBySalePriceGreaterThan(salePrice, pageable);
     } else {
       return gameSaleService.getAllGameSales(pageable);
+    }
+  }
+
+  // curl -v GET http://localhost:8080/getTotalSales?fromDate=2021-10-09&toDate=2024-10-10
+  @GetMapping("/getTotalSales")
+  public DailySaleService.Summary getTotalSales(
+      @RequestParam LocalDate fromDate,
+      @RequestParam LocalDate toDate,
+      @RequestParam(required = false) Integer gameNo) {
+
+    if (gameNo != null) {
+      return dailySaleService.getTotalSalesByGameNo(fromDate, toDate, gameNo);
+    } else {
+      return dailySaleService.getTotalSales(fromDate, toDate);
     }
   }
 }

@@ -44,6 +44,23 @@ testGetGameSalesByDuration:
 testGetGameSalesBySalePriceComparison:
 	@time curl http://localhost:8080/getGameSales\?salePrice\=20\&priceComparison\=less
 
+
+.PHONY: testGetTotalSalesByDuration
+# Test the /getTotalSales endpoint with duration, eg: curl -v GET http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10
+testGetTotalSalesByDuration:
+	@time curl http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10
+
+.PHONY: testGetTotalSalesByDurationAndGameNo
+# Test the /getTotalSales endpoint with duration and gameNo, eg: curl -v GET http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10\&gameNo\=50
+testGetTotalSalesByDurationAndGameNo:
+	@time curl http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10\&gameNo\=50
+
+
+.PHONY: gamesalesConnector
+# Set the mysql connection
+gamesalesConnector:
+	@curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://localhost:8083/connectors/ -d @mysql-connector.json
+
 .PHONY: help
 # Help.
 help:

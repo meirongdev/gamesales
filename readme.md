@@ -14,6 +14,14 @@
 make startApp
 ```
 
+## Config mysql cdc
+
+Use `debezium` to detect the change of the table `game_sales`.
+
+```bash
+make gamesalesConnector
+```
+
 ## Endpoint test
 
 import csv
@@ -26,6 +34,12 @@ make testImport
 make testGetGameSales
 make testGetGameSalesByDuration
 make testGetGameSalesBySalePriceComparison
+```
+
+`/getTotalSales` endpoint
+```bash
+make testGetTotalSalesByDuration
+make testGetTotalSalesByDurationAndGameNo
 ```
 
 ## Other Command
