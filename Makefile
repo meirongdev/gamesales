@@ -32,28 +32,28 @@ testImport:
 .PHONY: testGetGameSales
 # Test the /getGameSales endpoint
 testGetGameSales:
-	@time curl http://localhost:8080/getGameSales
+	@curl -w %{time_total} http://localhost:8080/getGameSales
 
 .PHONY: testGetGameSalesByDuration
 # Test the /getGameSales endpoint with duration, eg: curl -v GET http://localhost:8080/getGameSales\?fromDate\=2021-10-09T00:00:00Z\&toDate\=2024-10-10T23:59:59Z
 testGetGameSalesByDuration:
-	@time curl http://localhost:8080/getGameSales\?fromDate\=2021-10-09T00:00:00Z\&toDate\=2024-10-10T23:59:59Z
+	@curl -w %{time_total} http://localhost:8080/getGameSales\?fromDate\=2024-04-09T00:00:00Z\&toDate\=2024-04-10T23:59:59Z
 
 .PHONY: testGetGameSalesBySalePriceComparison
 # Test the /getGameSales endpoint with sale price, eg: curl -v GET http://localhost:8080/getGameSales\?salePrice\=20\&priceComparison\=less
 testGetGameSalesBySalePriceComparison:
-	@time curl http://localhost:8080/getGameSales\?salePrice\=20\&priceComparison\=less
+	@curl -w %{time_total} http://localhost:8080/getGameSales\?salePrice\=20\&priceComparison\=less
 
 
 .PHONY: testGetTotalSalesByDuration
 # Test the /getTotalSales endpoint with duration, eg: curl -v GET http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10
 testGetTotalSalesByDuration:
-	@time curl http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10
+	@curl  -w %{time_total} http://localhost:8080/getTotalSales\?fromDate\=2024-04-09\&toDate\=2024-04-10
 
 .PHONY: testGetTotalSalesByDurationAndGameNo
 # Test the /getTotalSales endpoint with duration and gameNo, eg: curl -v GET http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10\&gameNo\=50
 testGetTotalSalesByDurationAndGameNo:
-	@time curl http://localhost:8080/getTotalSales\?fromDate\=2024-10-09\&toDate\=2024-10-10\&gameNo\=50
+	@curl -w %{time_total} http://localhost:8080/getTotalSales\?fromDate\=2024-04-09\&toDate\=2024-04-10\&gameNo\=50
 
 
 .PHONY: gamesalesConnector
