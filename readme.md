@@ -7,6 +7,7 @@
 - SpringBoot 3.3.4
 - Docker Compose v2.29.7
 - curl
+- python3
 
 ## Start App
 
@@ -40,6 +41,16 @@ make testGetGameSalesBySalePriceComparison
 ```bash
 make testGetTotalSalesByDuration
 make testGetTotalSalesByDurationAndGameNo
+```
+
+generate 100M game sales record
+
+```bash
+make genData
+```
+
+```bash
+make testImport1M
 ```
 
 ## Other Command

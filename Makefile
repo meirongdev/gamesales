@@ -61,6 +61,17 @@ testGetTotalSalesByDurationAndGameNo:
 gamesalesConnector:
 	@curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://localhost:8083/connectors/ -d @mysql-connector.json
 
+.PHONY: genData
+# Generate 1 millions data for testing
+genData:
+	@echo "Generating data..."
+	@python3 gendata.py
+
+testImport1M:
+	@curl -X POST http://localhost:8080/import \
+		-F "file=@game_data.csv" \
+		-H "Content-Type: multipart/form-data"
+
 .PHONY: help
 # Help.
 help:
