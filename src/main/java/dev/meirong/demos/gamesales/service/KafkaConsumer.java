@@ -3,6 +3,7 @@ package dev.meirong.demos.gamesales.service;
 import dev.meirong.demos.gamesales.domain.GameSale;
 import dev.meirong.demos.gamesales.domain.ImportStatus;
 import dev.meirong.demos.gamesales.repository.CsvImportLogRepo;
+import dev.meirong.demos.gamesales.repository.GameSaleBatchRepo;
 import dev.meirong.demos.gamesales.repository.GameSaleRepo;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -11,7 +12,6 @@ import jakarta.validation.ValidatorFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -34,22 +35,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaConsumer {
 
-  private final GameSaleRepo gameSaleRepo;
   private final String uploadDir;
 
   private final CsvImportLogRepo csvImportLogRepo;
   private final Validator validator;
 
   private final ExecutorService executor;
+  private final GameSaleBatchRepo gameSaleBatchRepo;
 
-  private static final int BATCH = 300;
+  private static final int BATCH = 1000;
 
   public KafkaConsumer(
       @Value("${file.upload-dir}") String uploadDir,
       GameSaleRepo gameSaleRepo,
-      CsvImportLogRepo csvImportLogRepo) {
-    this.gameSaleRepo = gameSaleRepo;
+      CsvImportLogRepo csvImportLogRepo,
+      GameSaleBatchRepo gameSaleBatchRepo) {
     this.uploadDir = uploadDir;
+    this.gameSaleBatchRepo = gameSaleBatchRepo;
     this.csvImportLogRepo = csvImportLogRepo;
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     this.validator = factory.getValidator();
@@ -58,6 +60,8 @@ public class KafkaConsumer {
 
   @KafkaListener(topics = "csv-import", groupId = "gamesales-import-log-group")
   public void consume(String fileName) {
+    log.info("Start to process file: " + fileName);
+    long startTime = System.currentTimeMillis();
     // check fileName in cs_import_log
     var importLogOptional = csvImportLogRepo.findById(fileName);
     if (!importLogOptional.isPresent()) {
@@ -79,6 +83,8 @@ public class KafkaConsumer {
     var successCount = 0;
     var failureCount = 0;
     List<GameSale> gameSales = new ArrayList<>();
+    List<Future<?>> futures = new ArrayList<>();
+
     try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
       String line;
       while ((line = br.readLine()) != null) {
@@ -107,14 +113,19 @@ public class KafkaConsumer {
 
         if (gameSales.size() >= BATCH) {
           List<GameSale> batch = new ArrayList<>(gameSales);
-          executor.submit(() -> gameSaleRepo.saveAll(batch));
+          Future<?> future = executor.submit(() -> gameSaleBatchRepo.batchInsert(batch));
+          futures.add(future);
           gameSales.clear();
         }
       }
 
       if (!gameSales.isEmpty()) {
         List<GameSale> batch = new ArrayList<>(gameSales);
-        executor.submit(() -> gameSaleRepo.saveAll(batch));
+        Future<?> future = executor.submit(() -> gameSaleBatchRepo.batchInsert(batch));
+        futures.add(future);
+      }
+      for (Future<?> future : futures) {
+        future.get();
       }
 
       importLog.setSuccessCount(successCount);
@@ -127,11 +138,13 @@ public class KafkaConsumer {
       importLog.setUpdatedAt(Instant.now());
       csvImportLogRepo.save(importLog);
       log.info("File processed and saved to database: " + fileName);
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Error processing file: " + fileName, e);
       importLog.setImportStatus(ImportStatus.FAILURE);
       csvImportLogRepo.save(importLog);
     }
+    long endTime = System.currentTimeMillis();
+    log.info("File processed in {} ms", endTime - startTime);
   }
 
   private Optional<GameSale> convertToGameSale(String[] values) {
@@ -146,10 +159,10 @@ public class KafkaConsumer {
     var dateOfSale = values[8];
     gameSale.setDateOfSale(parse(dateOfSale));
     // try {
-    //   validateGameSale(gameSale);
+    // validateGameSale(gameSale);
     // } catch (IllegalArgumentException e) {
-    //   log.error("Validation failed for game sale: " + gameSale + " due to: " + e.getMessage());
-    //   gameSale = null;
+    // log.error("Validation failed for game sale: " + gameSale + " due to: " + e.getMessage());
+    // gameSale = null;
     // }
     return Optional.ofNullable(gameSale);
   }
