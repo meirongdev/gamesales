@@ -67,10 +67,24 @@ genData:
 	@echo "Generating data..."
 	@python3 gendata.py
 
+
+.PHONY: testImport1M
+# Test the /import endpoint with 1M data
 testImport1M:
 	@curl -X POST http://localhost:8080/import \
 		-F "file=@game_data.csv" \
 		-H "Content-Type: multipart/form-data"
+
+.PHONY: importStatus
+# Check the status of the import
+importStatus:
+	@if [ -z "$(TRACE_NO)" ]; then \
+		echo "Error: TRACE_NO is required"; \
+		echo "Usage: make importStatus TRACE_NO=your-trace-number"; \
+		echo "Example: make importStatus ABC20240424001"; \
+		exit 1; \
+	fi
+	@curl -w %{time_total} http://localhost:8080/import/status/$(TRACE_NO)
 
 .PHONY: help
 # Help.

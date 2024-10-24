@@ -137,7 +137,8 @@ testGetTotalSalesByDurationAndGameNo:
 
 ![import 1m status](./docs/images/import_status_1m.gif)
 
-> "createdAt":"2024-10-14T14:47:47.555949Z","updatedAt":"2024-10-14T14:47:53.316733Z"
+> 2024-10-24T13:22:22.184+08:00  INFO 1355881 --- [gamesales] [ntainer#1-0-C-1] d.m.d.gamesales.service.KafkaConsumer    : File processed in 8847 ms
 
-The time for importing(diff between **updatedAt** and **createdAt**) is less then 5s.
+> "createdAt":"2024-10-24T05:22:13.230426Z","updatedAt":"2024-10-24T05:22:22.172405Z"
 
+The time for importing is less then 10s.
