@@ -14,6 +14,8 @@ public class KafkaProducer {
   }
 
   public void sendMessage(String message) {
+    // TODO To ensure the message is sent to the correct topic, can record a log message in the db
+    // and use a cron job to check the log and resend the message if it fails
     kafkaTemplate.send(TOPIC_NAME, message);
   }
 }
